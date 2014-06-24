@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Floating Action Demo</string>
+  <string name="title_activity_main">Floating Action</string>
+  <string name="about">About</string>
+  <string name="settings">Settings</string>
+</resources>

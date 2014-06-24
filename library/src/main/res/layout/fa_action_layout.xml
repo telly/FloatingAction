@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ImageButton
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fa_action_view"
+    android:orientation="vertical"
+    android:layout_width="73dp"
+    android:layout_height="73dp"
+    android:scaleType="fitCenter"
+    android:padding="25dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginBottom="16dp"
+    android:layout_gravity="right|bottom"
+    android:background="@drawable/fa_default_background"
+    />
