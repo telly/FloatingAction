@@ -4,6 +4,10 @@ import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,11 +25,9 @@ import static com.telly.floatingaction.FloatingAction.Utils.checkResId;
  * An action stolen from ActionBar which happens to float
  */
 public class FloatingAction {
-  private final int mMenuItemId;
   private Activity mActivity;
   private ViewGroup mViewGroup;
   private ImageButton mView;
-  private Menu mMenu;
   private AbsListView mAbsListView;
   private TimeInterpolator mInterpolator;
   private boolean mHide;
@@ -49,21 +51,13 @@ public class FloatingAction {
     final View parent = mActivity.getLayoutInflater().inflate(R.layout.fa_action_layout, mViewGroup, true);
     mView = (ImageButton) parent.findViewById(R.id.fa_action_view);
 
-    mMenu = builder.mMenu;
-    mMenuItemId = builder.mMenuItemId;
-
-    final MenuItem item = mMenu.findItem(mMenuItemId);
-    checkNotNull(item, "No menu item found with id " + mMenuItemId);
-    // hide yo kids, hide yo wife
-    item.setVisible(false);
-
     // Setup drawable
-    Drawable icon = item.getIcon();
+    Drawable icon = builder.mIcon;
     checkNotNull(icon, "Menu item must provide a drawable");
     icon = icon.mutate();
     icon.setColorFilter(builder.mIconColor, PorterDuff.Mode.MULTIPLY);
     mView.setImageDrawable(icon);
-    mView.setOnClickListener(mDelegate);
+    mView.setOnClickListener(builder.mClickListener);
     // Start listening if any
     listenTo(builder.mAbsListView);
   }
@@ -85,13 +79,24 @@ public class FloatingAction {
     mViewGroup.removeView(mView);
     mViewGroup = null;
     mView = null;
-    mMenu = null;
     mActivity = null;
   }
 
   private void onDirectionChanged(boolean goingDown) {
-    if (mHide != goingDown) {
-      mHide = goingDown;
+    leHide(goingDown);
+  }
+
+  public void hide() {
+    leHide(true);
+  }
+
+  public void show() {
+    leHide(false);
+  }
+
+  private void leHide(boolean hide) {
+    if (mHide != hide) {
+      mHide = hide;
       int marginBottom = 0;
       final ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
       if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
@@ -102,15 +107,7 @@ public class FloatingAction {
     }
   }
 
-  public void hide() {
-
-  }
-
-  public void show() {
-
-  }
-
-  class Delegate implements OnScrollListener, OnClickListener {
+  class Delegate implements OnScrollListener {
     public static final int DIRECTION_CHANGE_THRESHOLD = 1;
     public int mPrevPosition;
     public int mPrevTop;
@@ -139,12 +136,6 @@ public class FloatingAction {
     }
 
     @Override
-    public void onClick(View v) {
-      mMenu.performIdentifierAction(mMenuItemId, 0);
-    }
-
-
-    @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
       //No-op
     }
@@ -152,38 +143,26 @@ public class FloatingAction {
 
   public static class Builder {
     private Activity mActivity;
-    private Menu mMenu;
-    private int mMenuItemId;
     private int mTargetParentId = android.R.id.content;
     private AbsListView mAbsListView;
     private int mIconColor = 0xff139eff;
     private TimeInterpolator mInterpolator;
     private long mDuration = 200;
+    private OnClickListener mClickListener;
+    private Drawable mIcon;
 
-    private Builder(Activity activity) {
+    private Builder(@NonNull Activity activity) {
       checkNotNull(activity, "Invalid Activity provided.");
       mActivity = activity;
     }
 
-    public Builder menu(Menu menu) {
-      checkNotNull(menu, "No Menu provided, make sure to provide one.");
-      mMenu = menu;
-      return this;
-    }
-
-    public Builder entree(int menuItemId) {
-      checkResId(menuItemId, "Invalid menu item id.");
-      mMenuItemId = menuItemId;
-      return this;
-    }
-
-    public Builder in(int targetParentId) {
+    public Builder in(@IdRes int targetParentId) {
       checkResId(targetParentId, "Invalid parent id.");
       mTargetParentId = targetParentId;
       return this;
     }
 
-    public Builder listenTo(int scrollableId) {
+    public Builder listenTo(@IdRes int scrollableId) {
       checkResId(scrollableId, "Invalid view id.");
       final View view = mActivity.findViewById(scrollableId);
       if (!(view instanceof AbsListView)) {
@@ -204,7 +183,7 @@ public class FloatingAction {
       return this;
     }
 
-    public Builder colorResId(int colorResId) {
+    public Builder colorResId(@ColorRes int colorResId) {
       checkResId(colorResId, "Invalid color resource provided.");
       final int colorFromRes = mActivity.getResources().getColor(colorResId);
       return color(colorFromRes);
@@ -221,14 +200,31 @@ public class FloatingAction {
       mDuration = duration;
     }
 
-    public FloatingAction order() {
+    public Builder icon(@DrawableRes int drawableResId) {
+      checkResId(drawableResId, "Invalid icon resource provided.");
+      final Drawable drawable = mActivity.getResources().getDrawable(drawableResId);
+      return icon(drawable);
+    }
+
+    public Builder icon(Drawable drawable) {
+      checkNotNull(drawable, "Invalid icon drawable provided.");
+      mIcon = drawable;
+      return this;
+    }
+
+    public Builder listener(OnClickListener listener) {
+      checkNotNull(listener, "Invalid click listener provided.");
+      mClickListener = listener;
+      return this;
+    }
+
+    public FloatingAction build() {
 
       if (mInterpolator == null) {
         mInterpolator = new AccelerateDecelerateInterpolator();
       }
       return new FloatingAction(this);
     }
-
   }
 
   static class Utils {

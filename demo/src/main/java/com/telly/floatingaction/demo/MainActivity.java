@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -13,8 +14,7 @@ import com.telly.floatingaction.FloatingAction;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
   private ListView mListView;
   private FloatingAction mFloatingAction;
 
@@ -34,31 +34,23 @@ public class MainActivity extends Activity {
 
     final ListAdapter adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items);
     mListView.setAdapter(adapter);
+
+    mFloatingAction = FloatingAction.from(this)
+          .listenTo(mListView)
+          .icon(R.drawable.ic_action_about)
+          .listener(this)
+          .build();
+  }
+
+  @Override
+  public void onClick(View v) {
+    Toast.makeText(this, "Floating Action Clicked", Toast.LENGTH_SHORT).show();
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.main_menu, menu);
-
-    mFloatingAction = FloatingAction.from(this)
-        .listenTo(android.R.id.list)
-        .menu(menu)
-        .entree(R.id.action_about)
-        .order();
     return super.onCreateOptionsMenu(menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    final int id = item.getItemId();
-    switch (id) {
-      case R.id.action_about:
-      case R.id.action_settings:
-        Toast.makeText(this, "Menu item " + item.getTitle() + " clicked.", Toast.LENGTH_SHORT).show();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
   }
 
   @Override
@@ -67,4 +59,5 @@ public class MainActivity extends Activity {
 
     mFloatingAction.onDestroy();
   }
+
 }
