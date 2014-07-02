@@ -8,8 +8,6 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -69,6 +67,7 @@ public class FloatingAction {
     }
     mAbsListView = absListView;
     if (mAbsListView != null) {
+      mDelegate.reset();
       mAbsListView.setOnScrollListener(mDelegate);
     }
   }
@@ -108,9 +107,10 @@ public class FloatingAction {
   }
 
   class Delegate implements OnScrollListener {
-    public static final int DIRECTION_CHANGE_THRESHOLD = 1;
-    public int mPrevPosition;
-    public int mPrevTop;
+    private static final int DIRECTION_CHANGE_THRESHOLD = 1;
+    private int mPrevPosition;
+    private int mPrevTop;
+    private boolean mUpdated;
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
@@ -128,16 +128,23 @@ public class FloatingAction {
       } else {
         goingDown = firstVisibleItem > mPrevPosition;
       }
-      if (changed) {
+      if (changed && mUpdated) {
         onDirectionChanged(goingDown);
       }
       mPrevPosition = firstVisibleItem;
       mPrevTop = firstViewTop;
+      mUpdated = true;
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
       //No-op
+    }
+
+    public void reset() {
+      mPrevPosition = 0;
+      mPrevTop = 0;
+      mUpdated = false;
     }
   }
 
