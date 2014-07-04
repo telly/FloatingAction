@@ -3,14 +3,14 @@ FloatingAction
 
 A basic implementation of Floating Action Button pattern as seen on Material Design
 
-![Le demo](http://i.imgur.com/umpHuyu.gif)
+![Le demo](http://i.imgur.com/Z0nTwvj.gif)
 
 ### Usage
 
-See demo
+See demo, at this point latest version is `0.0.4`
 
 ```groovy
-compile 'com.telly.floatingaction:library:(insert latest version)'
+compile 'com.telly:floatingaction:(insert latest version)'
 ```
 
 ```java

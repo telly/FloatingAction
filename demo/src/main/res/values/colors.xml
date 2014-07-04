@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="branding">#ffa4c639</color>
+  <color name="turquoise">#ff1ABC9C</color>
+  <color name="green_sea">#ff16A085</color>
+  <color name="emerland">#ff2ECC71</color>
+  <color name="nephritis">#ff27AE60</color>
+  <color name="peter_river">#ff3498DB</color>
+  <color name="belize_hole">#ff2980B9</color>
+  <color name="amethyst">#ff9B59B6</color>
+  <color name="wisteria">#ff8E44AD</color>
+  <color name="wet_asphalt">#ff34495E</color>
+  <color name="midnight_blue">#ff2C3E50</color>
+  <color name="sun_flower">#ffF1C40F</color>
+  <color name="orange">#ffF39C12</color>
+  <color name="carrot">#ffE67E22</color>
+  <color name="pumpkin">#ffD35400</color>
+  <color name="alizarin">#ffE74C3C</color>
+  <color name="pomegranate">#ffC0392B</color>
+</resources>
