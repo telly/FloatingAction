@@ -1,6 +1,5 @@
 package com.telly.floatingaction;
 
-import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -16,6 +15,7 @@ import android.widget.ImageButton;
 
 import static android.view.View.OnClickListener;
 import static android.widget.AbsListView.OnScrollListener;
+import static com.nineoldandroids.view.ViewPropertyAnimator.animate;
 import static com.telly.floatingaction.FloatingAction.Utils.checkNotNull;
 import static com.telly.floatingaction.FloatingAction.Utils.checkResId;
 
@@ -27,7 +27,7 @@ public class FloatingAction {
   private ViewGroup mViewGroup;
   private ImageButton mView;
   private AbsListView mAbsListView;
-  private TimeInterpolator mInterpolator;
+  private AccelerateDecelerateInterpolator mInterpolator;
   private boolean mHide;
 
   private Delegate mDelegate = new Delegate();
@@ -102,7 +102,12 @@ public class FloatingAction {
         marginBottom = ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin;
       }
       final int translationY = mHide ? mView.getHeight() + marginBottom : 0;
-      mView.animate().setInterpolator(mInterpolator).setDuration(mDuration).translationY(translationY);
+      animate(mView)
+          .setDuration(mDuration)
+          .translationY(translationY)
+          .setInterpolator(mInterpolator);
+
+      animate(mView).setInterpolator(mInterpolator).setDuration(mDuration).translationY(translationY);
     }
   }
 
@@ -153,7 +158,7 @@ public class FloatingAction {
     private int mTargetParentId = android.R.id.content;
     private AbsListView mAbsListView;
     private int mIconColor = 0xff139eff;
-    private TimeInterpolator mInterpolator;
+    private AccelerateDecelerateInterpolator mInterpolator;
     private long mDuration = 200;
     private OnClickListener mClickListener;
     private Drawable mIcon;
@@ -175,7 +180,7 @@ public class FloatingAction {
       if (!(view instanceof AbsListView)) {
         throw new IllegalArgumentException("Provided view can't be listened to.");
       }
-      listenTo((AbsListView)view);
+      listenTo((AbsListView) view);
       return this;
     }
 
@@ -196,7 +201,7 @@ public class FloatingAction {
       return color(colorFromRes);
     }
 
-    public void animInterpolator(TimeInterpolator interpolator) {
+    public void animInterpolator(AccelerateDecelerateInterpolator interpolator) {
       mInterpolator = interpolator;
     }
 
