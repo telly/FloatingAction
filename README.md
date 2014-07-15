@@ -7,7 +7,7 @@ A basic implementation of Floating Action Button pattern as seen on Material Des
 
 ### Usage
 
-See demo, at this point latest version is `0.0.4`
+See demo, at this point latest version is `0.0.5`
 
 ```groovy
 compile 'com.telly:floatingaction:(insert latest version)'
