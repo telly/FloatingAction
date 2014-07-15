@@ -10,11 +10,13 @@ import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AbsListView;
 import android.widget.ImageButton;
 
 import static android.view.View.OnClickListener;
+import static android.view.ViewTreeObserver.OnPreDrawListener;
 import static android.widget.AbsListView.OnScrollListener;
 import static com.telly.floatingaction.FloatingAction.Utils.checkNotNull;
 import static com.telly.floatingaction.FloatingAction.Utils.checkResId;
@@ -43,8 +45,12 @@ public class FloatingAction {
     mInterpolator = builder.mInterpolator;
     mDuration = builder.mDuration;
 
-    mViewGroup = (ViewGroup) mActivity.findViewById(builder.mTargetParentId);
-    checkNotNull(mViewGroup, "No parent found with id " + builder.mTargetParentId);
+    if (builder.mParent != null) {
+      mViewGroup = builder.mParent;
+    } else {
+      mViewGroup = (ViewGroup) mActivity.findViewById(builder.mTargetParentId);
+      checkNotNull(mViewGroup, "No parent found with id " + builder.mTargetParentId);
+    }
 
     final View parent = mActivity.getLayoutInflater().inflate(R.layout.fa_action_layout, mViewGroup, true);
     mView = (ImageButton) parent.findViewById(R.id.fa_action_view);
@@ -82,27 +88,66 @@ public class FloatingAction {
   }
 
   private void onDirectionChanged(boolean goingDown) {
-    leHide(goingDown);
+    leHide(goingDown, true);
   }
 
   public void hide() {
-    leHide(true);
+    hide(true);
+  }
+
+  public void hide(boolean animate) {
+    leHide(true, animate);
   }
 
   public void show() {
-    leHide(false);
+    show(true);
   }
 
-  private void leHide(boolean hide) {
-    if (mHide != hide) {
+  public void show(boolean animate) {
+    leHide(false, animate);
+  }
+
+  private void leHide(final boolean hide, final  boolean animated) {
+    leHide(hide, animated, false);
+  }
+
+  private void leHide(final boolean hide, final  boolean animated, final boolean deferred) {
+    if (mHide != hide || deferred) {
       mHide = hide;
+      final int height = mView.getHeight();
+      if (height == 0 && !deferred) {
+        // Dang it, haven't been drawn before, defer! defer!
+        final ViewTreeObserver vto = mView.getViewTreeObserver();
+        if (vto.isAlive()) {
+          vto.addOnPreDrawListener(new OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+              // Sometimes is not the same we used to know
+              final ViewTreeObserver currentVto = mView.getViewTreeObserver();
+              if (currentVto.isAlive()) {
+                currentVto.removeOnPreDrawListener(this);
+              }
+              leHide(hide, animated, true);
+              return true;
+            }
+          });
+          return;
+        }
+      }
       int marginBottom = 0;
       final ViewGroup.LayoutParams layoutParams = mView.getLayoutParams();
       if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
         marginBottom = ((ViewGroup.MarginLayoutParams) layoutParams).bottomMargin;
       }
-      final int translationY = mHide ? mView.getHeight() + marginBottom : 0;
-      mView.animate().setInterpolator(mInterpolator).setDuration(mDuration).translationY(translationY);
+      final int translationY = mHide ? height + marginBottom : 0;
+      if (animated) {
+        mView.animate()
+            .setInterpolator(mInterpolator)
+            .setDuration(mDuration)
+            .translationY(translationY);
+      } else {
+        mView.setTranslationY(translationY);
+      }
     }
   }
 
@@ -151,6 +196,7 @@ public class FloatingAction {
   public static class Builder {
     private Activity mActivity;
     private int mTargetParentId = android.R.id.content;
+    private ViewGroup mParent;
     private AbsListView mAbsListView;
     private int mIconColor = 0xff139eff;
     private TimeInterpolator mInterpolator;
@@ -166,6 +212,12 @@ public class FloatingAction {
     public Builder in(@IdRes int targetParentId) {
       checkResId(targetParentId, "Invalid parent id.");
       mTargetParentId = targetParentId;
+      return this;
+    }
+
+    public Builder in(ViewGroup parent) {
+      checkNotNull(parent, "Invalid parent provided.");
+      mParent = parent;
       return this;
     }
 
@@ -196,15 +248,17 @@ public class FloatingAction {
       return color(colorFromRes);
     }
 
-    public void animInterpolator(TimeInterpolator interpolator) {
+    public Builder animInterpolator(TimeInterpolator interpolator) {
       mInterpolator = interpolator;
+      return this;
     }
 
-    public void animDuration(long duration) {
+    public Builder animDuration(long duration) {
       if (duration < 0) {
         throw new IllegalArgumentException("Animation cannot have negative duration: " + duration);
       }
       mDuration = duration;
+      return this;
     }
 
     public Builder icon(@DrawableRes int drawableResId) {
