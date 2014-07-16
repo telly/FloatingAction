@@ -5,6 +5,10 @@ A basic implementation of Floating Action Button pattern as seen on Material Des
 
 ![Le demo](http://i.imgur.com/Z0nTwvj.gif)
 
+### Demo
+
+[![FloatingAction Demo on Google Play Store](http://developer.android.com/images/brand/en_generic_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=com.telly.floatingaction.demo)
+
 ### Usage
 
 See demo, at this point latest version is `0.0.5`
