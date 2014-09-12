@@ -33,6 +33,7 @@ public class FloatingAction {
   private boolean mHide;
 
   private Delegate mDelegate = new Delegate();
+  private PublicListener mPublicListener;
   private long mDuration;
 
   public static Builder from(Activity activity) {
@@ -77,6 +78,20 @@ public class FloatingAction {
       mAbsListView.setOnScrollListener(mDelegate);
     }
   }
+  
+  /**
+   * Obtain an {@link OnScrollListener} instance which can be used as plan B
+   * when there is no access to an instance of {@link AbsListView}.
+   * Note: Usage of {@link #listenTo(android.widget.AbsListView)} is always preferred.
+   *
+   * @returns {@link OnScrollListener} to provide other {@link AbsListView} wrapper views
+   */
+  public OnScrollListener getOnScrollListener() {
+    if (mPublicListener == null) {
+      mPublicListener = new PublicListener(mDelegate);
+    }
+    return mPublicListener;
+  }
 
   public void onDestroy() {
     listenTo(null);
@@ -85,6 +100,10 @@ public class FloatingAction {
     mViewGroup = null;
     mView = null;
     mActivity = null;
+    if (mPublicListener != null) {
+      mPublicListener.destroy();
+      mPublicListener = null;
+    }
   }
 
   private void onDirectionChanged(boolean goingDown) {
@@ -190,6 +209,32 @@ public class FloatingAction {
       mPrevPosition = 0;
       mPrevTop = 0;
       mUpdated = false;
+    }
+  }
+
+  static class PublicListener implements OnScrollListener {
+    private Delegate mDelegate;
+
+    public PublicListener(Delegate delegate) {
+      mDelegate = delegate;
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+      if (mDelegate != null) {
+        mDelegate.onScrollStateChanged(view, scrollState);
+      }
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+      if (mDelegate != null) {
+        mDelegate.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+      }
+    }
+
+    public void destroy() {
+      mDelegate = null;
     }
   }
 
